@@ -1,0 +1,20 @@
+[package]
+name = "pyo3-example"
+version = "0.1.0"
+edition = "2024"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "pyo3_example"
+crate-type = ["cdylib"]
+
+[dependencies]
+faer = {version="0.24.0", features=["rayon"]}
+petgraph = "0.8.3"
+pyo3 = "0.27.0"
+linfa = "0.7.0"
+linfa-clustering = "0.7.0"
+linfa-nn = "0.7.0"
+ndarray = "0.15"
+rand = "0.8"
+rand_xoshiro = "0.6"
