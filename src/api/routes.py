@@ -8,6 +8,7 @@ from helpers.graph_helpers import build_edges, build_grouped_nodes, detect_branc
 
 import json
 from pathlib import Path
+import numpy as np
 
 Base.metadata.create_all(bind=engine) #creates tables if they don't exist
 
@@ -49,6 +50,17 @@ def compute_tree(group_key: str, db: Session = Depends(get_db)):
         if "isKeystone" in node_data or "isNotable" in node_data
     )
 
+    # Find the eigengap, limited to low frequency eigenvalues
+    """ nontrivialEig = eigenvalues[1:100]
+    normalizer = eigenvalues[100]
+    nontrivialEigNorm = [ x / normalizer for x in nontrivialEig ]
+
+    gaps = np.diff(nontrivialEigNorm)
+    eigengap = np.argmax(gaps) + 1
+    print(f"eigengap found at: {eigengap}")
+    print(f"eigenvalue is: {eigenvalues[eigengap]}") """
+
+
     result = SkillTreeResult(
         group_key=group_key,
         node_count=node_count,
@@ -85,13 +97,23 @@ def compute_clustering(group_key: str, db: Session = Depends(get_db)):
     print(f"Special node count:")
     
     eigenvectors = results.eigenvectors
-    k = results.special_node_count - 1
+
+    # Find the eigengap, limited to low frequency eigenvalues
+    nontrivialEig = [ x for x in results.eigenvalues[1:] if x < 0.1]
+    normalizer = nontrivialEig[-1]
+    nontrivialEigNorm = [ x / normalizer for x in nontrivialEig ]
+
+    gaps = np.diff(nontrivialEigNorm)
+    eigengap = np.argmax(gaps) + 1
+    print(f"eigengap found at: {eigengap}")
+    print(f"eigenvalue is: {results.eigenvalues[eigengap]}")
+
     if len(eigenvectors) <= 50:
         print(f"Small graph({len(eigenvectors)} nodes), using branch detection")
         clusters = detect_branches(results.edges, results.node_count)
     else:
         print(f"Large graph({len(eigenvectors)} nodes), using spectral clustering")
-        clusters = pyo3_example.run_spectral_kmeans(eigenvectors, 7)
+        clusters = pyo3_example.run_spectral_kmeans(eigenvectors, eigengap)
 
     clustering_result = ClusteringResult(
         group_key=group_key,

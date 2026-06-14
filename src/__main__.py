@@ -39,7 +39,7 @@ def compute_clustering(group_key):
 
     print(f"Computing clusters for {group_key}...")
     response = requests.post(f"{BASE_URL}/compute/clustering/{group_key}")
-    print(response.json())
+    #print(response.json())
 
 def visualize_clustering(group_key, grouped_nodes):
 
